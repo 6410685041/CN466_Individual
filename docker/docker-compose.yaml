@@ -1,0 +1,24 @@
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
+    expose:
+      - 27017
+      
+  alarm_collector:
+    build: ./alarm_collector
+    ports:
+      - "5001:5001"
+    depends_on:
+      - "mongodb"
+
+  alarm_api:
+    ports:
+      - "5002:5002"
+    build: ./alarm_api
+    depends_on:
+      - "mongodb"
