@@ -32,10 +32,9 @@ def home_by_id(home_id):
         return None
     
 def insert_house_data(doc):
-    db = mongo_connect
+    db = mongo_connect()
     try:
-        house = db.house
-        house.insert_one(doc)
+        db.houses.insert_one(doc)
         print("Insert Succesfully in database")
     except Exception as e:
         logging.error(f"Error insert data: {e}")
