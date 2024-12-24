@@ -16,7 +16,7 @@ const char* password = "umoi7006";
 // MQTT server credentials
 const char* mqttServer = "mqtt.eclipseprojects.io";
 const int mqttPort = 1883;
-const char* mqttTopic = "CN466/Alarm/home/myhouse";
+const char* mqttTopic = "CN466/Alarm/house/myhouse";
 const char* server = "https://lqmf0w3x-5002.asse.devtunnels.ms/"
 
 char mqttCameraTopic[50];

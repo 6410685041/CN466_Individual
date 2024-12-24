@@ -8,4 +8,4 @@ liff_blueprint = Blueprint('liff', __name__, template_folder='../templates', sta
 @liff_blueprint.route("/")
 def liff():
 
-    return render_template('History.html')
+    return render_template('history.html')

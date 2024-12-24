@@ -38,7 +38,7 @@ line_blueprint = Blueprint('line', __name__)
 
 configuration = Configuration(access_token=os.environ['CHANNEL_ACCESS_TOKEN'])
 handler = WebhookHandler(os.environ['CHANNEL_SECRET'])
-line_bot_api = LineBotApi(os.environ['CHANNEL_ACCESS_TOKEN'])  # Correct initialization
+line_bot_api = LineBotApi(os.environ['CHANNEL_ACCESS_TOKEN'])
 
 @line_blueprint.route("/callback", methods=['POST'])
 def callback():
