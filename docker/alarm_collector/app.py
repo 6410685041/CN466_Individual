@@ -8,8 +8,8 @@ import os
 
 MQTT_BROKER ="mqtt.eclipseprojects.io"
 MQTT_PORT = 1883
-MQTT_SUB_TOPIC = "CN466/Alarm/#"
-MQTT_PUB_TOPIC = "CN466/Alarm/house"
+MQTT_SUB_TOPIC = "CN466/Alarm/home/#"
+MQTT_PUB_TOPIC = "Notify/Line"
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc, properties):
@@ -28,10 +28,13 @@ def connect_mqtt():
         tsimcam = db.rooms
         doc = {
             "timestamp" : payload["timestamp"],
-            "home_id": topic.split("TU/CN466/tsimcam/room")[-1],
+            "home_id": topic.split("CN466/Alarm/home")[-1],
             "image" : payload["image"]
             }
         tsimcam.insert_one(doc)
+        # after insert it will notify to another container in alarm_api
+        notify_json = "\"home_id\": "
+        client.publish(MQTT_PUB_TOPIC, "Notify")
             
     client = mqttc.Client(mqttc.CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
