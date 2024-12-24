@@ -20,15 +20,26 @@ def mongo_connect():
         logging.error(f"Error connecting to MongoDB: {e}")
         raise
 
-def home_by_id(home_id):
+def house_by_id(home_id):
     db = mongo_connect()
     try:
-        home = db.homes.find({"home_id": home_id}).limit(1)
+        home = db.houses.find({"home_id": home_id})[0]
         if home:
             return dumps(home)
         return None
     except Exception as e:
-        logging.error(f"Error fetching room by ID: {e}")
+        logging.error(f"Error fetching house by ID: {e}")
+        return None
+    
+def home_by_id(home_id):
+    db = mongo_connect()
+    try:
+        home = db.homes.find({"home_id": home_id})[0]
+        if home:
+            return dumps(home)
+        return None
+    except Exception as e:
+        logging.error(f"Error fetching home by ID: {e}")
         return None
     
 def insert_house_data(doc):
@@ -37,5 +48,15 @@ def insert_house_data(doc):
         db.houses.insert_one(doc)
         print("Insert Succesfully in database")
     except Exception as e:
-        logging.error(f"Error insert data: {e}")
-        print("Something went wrong with insertion")
+        logging.error(f"Error insert new house data: {e}")
+
+def insert_collected_data(collected_data):
+    db = mongo_connect()
+    try:
+        db.houses.update_one(
+                            {'home_id': collected_data['home_id']},
+                            {'$push': {'collected': collected_data['collected'][0]}}
+                        )
+        print(f"Collected data is insert in {collected_data['home_id']} successfully")
+    except Exception as e:
+        logging.error(f"Error inserting collected data: {e}")

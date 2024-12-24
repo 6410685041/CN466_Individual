@@ -22,8 +22,8 @@ notify_message = "Notification: There is visitor on your house\n check: https://
 
 def Notify_User(home_id):
     home = home_by_id(home_id)
-    if home!="[]":
-        home = json.loads(home)[0]
+    if home:
+        home = json.loads(home)
         families = home["family"]
         for person in families:
             try:

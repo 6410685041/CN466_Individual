@@ -2,7 +2,7 @@ import paho.mqtt.client as mqttc
 import time
 import json
 from utils.lineNotify import Notify_User
-from utils.mongodb import insert_house_data
+from utils.mongodb import insert_house_data, house_by_id, insert_collected_data
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -25,12 +25,21 @@ def connect_mqtt():
         payload = json.loads(msg.payload.decode('utf-8'))
         print("Create new document")
         home_id = topic.split("CN466/Alarm/house/")[-1]
+        home = house_by_id(home_id)
         doc = {
-            "timestamp" : payload["timestamp"],
             "home_id": home_id,
-            "image" : payload["image"]
-            }
-        insert_house_data(doc)
+            "collected" : [{
+                "timestamp" : payload["timestamp"],
+                "image" : payload["image"]
+            }]
+        }
+        if not home:
+            print("Create new ID House")
+            insert_house_data(doc)
+        else:
+            print("This ID House is existed")
+            insert_collected_data(doc)
+
         Notify_User(home_id)
             
     client = mqttc.Client(mqttc.CallbackAPIVersion.VERSION2)
