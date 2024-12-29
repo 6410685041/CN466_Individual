@@ -49,12 +49,15 @@ bool cam_dev_init(void) {
 }
 
 int cam_dev_snapshot(uint8_t *out_buf) {
-    int buf_sz = 0;
-    camera_fb_t * pic = esp_camera_fb_get();
-
-    buf_sz = pic->len;
-    memcpy(out_buf, pic->buf, buf_sz);
-    esp_camera_fb_return(pic);
-
-    return buf_sz;
+    camera_fb_t *pic = esp_camera_fb_get();
+    if (pic != NULL) {
+        int buf_sz = pic->len;
+        memcpy(out_buf, pic->buf, buf_sz);
+        esp_camera_fb_return(pic);
+        return buf_sz;
+    } else {
+        printf("Failed to capture image\n");
+        return 0;
+    }
 }
+

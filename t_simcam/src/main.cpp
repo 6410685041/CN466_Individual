@@ -2,6 +2,7 @@
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <PubSubClient.h>
+#include <NTPClient.h>
 
 #include <Arduino.h>
 #include <cam_dev.h>
@@ -17,19 +18,15 @@ const char* password = "umoi7006";
 const char* mqttServer = "mqtt.eclipseprojects.io";
 const int mqttPort = 1883;
 const char* mqttTopic = "CN466/Alarm/house/myhouse";
-const char* server = "https://lqmf0w3x-5002.asse.devtunnels.ms/"
-
-char mqttCameraTopic[50];
-char uploadPath[100];
-char videoPath[100];
-
-char* mqttCamera
 
 // WiFi and MQTT clients
 WiFiClient wifiClient;
 WiFiClientSecure clientSecure;
 PubSubClient mqttClient(wifiClient);
 
+// NTP client setup
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", 0, 60000); // Update time every 60 seconds
 
 void connectToWiFi() {
   Serial.print("Connecting to WiFi");
@@ -61,64 +58,40 @@ void connectToMQTT() {
   }
 }
 
-void captureAndUploadImage(const char* url) {
-    if (image_buf == nullptr) {
-        Serial.println("Image buffer is not allocated. Skipping capture.");
-        return;
+void send_image(uint8_t* buf, unsigned int buf_sz) {
+    if (!mqttClient.connected()) {
+        connectToMQTT();
     }
 
-    int image_size = cam_dev_snapshot(image_buf);
-    if (image_size <= 0) {
-        Serial.println("Failed to capture image or invalid image size.");
-        return;
-    }
+    // Update the NTP time
+    timeClient.update();
 
-    HTTPClient http;
-    clientSecure.setCACert(certificate);
-    http.begin(clientSecure, url);
-    http.setTimeout(5000);
+    // Get the current time
+    unsigned long epochTime = timeClient.getEpochTime();
 
-    String boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
-    String form_data_start = "--" + boundary + "\r\n" +
-                             "Content-Disposition: form-data; name=\"file\"; filename=\"image.jpg\"\r\n" +
-                             "Content-Type: image/jpeg\r\n\r\n";
-    String form_data_end = "\r\n--" + boundary + "--\r\n";
+    // Convert to a human-readable format
+    char formattedTime[30];
+    struct tm* timeInfo = gmtime((time_t*)&epochTime);
+    snprintf(formattedTime, sizeof(formattedTime), "%02d-%02d-%04d %02d:%02d:%02d",
+             timeInfo->tm_mday, timeInfo->tm_mon + 1, timeInfo->tm_year + 1900,
+             timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec);
 
-    int total_length = form_data_start.length() + image_size + form_data_end.length();
-    char *body = (char*)malloc(total_length);
-    if (body == nullptr) {
-        Serial.println("Failed to allocate memory for HTTP body.");
-        return;
-    }
+    // Create the JSON message
+    char message[150];
+    snprintf(message, sizeof(message),
+             "{\n"
+             "  \"timestamp\": \"%s\",\n"
+             "  \"image\": \"test.jpg\"\n"
+             "}",
+             formattedTime);
 
-    memcpy(body, form_data_start.c_str(), form_data_start.length());
-    memcpy(body + form_data_start.length(), image_buf, image_size);
-    memcpy(body + form_data_start.length() + image_size, form_data_end.c_str(), form_data_end.length());
+    mqttClient.publish(mqttTopic, message);
 
-    http.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
-    int httpResponseCode = http.POST((uint8_t*)body, total_length);
-
-    if (httpResponseCode > 0) {
-        Serial.print("Image upload successful, HTTP response code: ");
-        Serial.println(httpResponseCode);
-        String response = http.getString();
-        Serial.print("Response message: ");
-        Serial.println(response);
-    } else {
-        Serial.print("Error on image upload, code: ");
-        Serial.println(httpResponseCode);
-    }
-
-    free(body);
-    http.end();
+    Serial.print("Sending image by MQTT\n");
 }
-
 
 void setup() {
   Serial.begin(115200);
-
-  strcpy(mqttCameraTopic, bound);
-  strcat(mqttCameraTopic, gate);
 
   pinMode(ALARM_PIN, INPUT);
 
@@ -129,9 +102,11 @@ void setup() {
   connectToWiFi();
   
   // Setup MQTT
-  mqttClient.setServer(mqttServer, mqttPort );
-  mqttClient.setCallback(mqttCallback);
+  mqttClient.setServer(mqttServer, mqttPort);
   connectToMQTT();
+
+  // Initialize NTP client
+    timeClient.begin();
 }
 
 void loop() {
@@ -146,7 +121,10 @@ void loop() {
 
   int alarmButton = digitalRead(ALARM_PIN);
   if (alarmButton) {
-    mqttClient.publish(mqttCameraTopic, "Alarm");
-    captureAndUploadImage(videoPath);
+    static uint8_t buf[160 * 120 * 2] = {0};
+    int buf_sz = cam_dev_snapshot(buf);
+    if (buf_sz > 0) {
+        send_image(buf, buf_sz);
+    }
   }
 }
