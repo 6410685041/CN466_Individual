@@ -26,4 +26,5 @@ Instructions
 - ในฐานะเจ้าของบ้าน ต้องการให้มีเพียงลูกบ้านของตนเท่านั้นที่จะเข้าระบบได้ เพื่อที่จะรักษาความเป็นส่วนตัวได้
 
 
-Demo Clip: 
+## Clip
+Demo Clip: https://drive.google.com/file/d/1ic-4rcCtl6GzbFHZXCzHuwV5MCX6E7Ch/view?usp=drive_link
