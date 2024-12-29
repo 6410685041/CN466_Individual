@@ -6,13 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script type="text/javascript">
+        var config = {liffId: "{{ liff_id }}"};
+    </script>
+    <script src="{{ url_for('static', filename='js/init_liff.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     {% block css %}{% endblock %}
+    {% block js %}{% endblock %}
 </head>
 
 <body style="margin:0;">
     <div class="container">
         <nav id="navbar" class="navbar">
-            
+            <div id="profile">
+                <table>
+                    <tr>
+                        <td><img id="profile-picture" src="" alt="Profile Picture"></td>
+                        <td><p id="display-name"></p></td>
+                    </tr>
+                </table>
+            </div>
         </nav>
 
         <div id="content">

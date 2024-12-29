@@ -85,16 +85,19 @@ def create_reply(event):
             if json_home!="[]":
                 home = json.loads(json_home)[0]
                 # # make sure that only home per user
-                # if registered!="[]":
-                #     reply_text = "The User Id is already registered."
-                if password == home['password']:
+                if registered!="[]":
+                    reply_text = "The User Id is already registered."
+                elif password == home['password']:
                     user_data = {
                         'user_id': user_id,
                         'home_id': home_id
                     }
                     mongo_insert_user(user_data)
                     reply_text = f"The User Id is succesfully registered."
-            reply_text = "Home Id is not existed or Password is wrong."
+                else:
+                    reply_text = "Home Id is not existed or Password is wrong."
+            else:
+                reply_text = "Home Id is not existed or Password is wrong."
 
         elif command == "home":
             home = mongo_home_by_id(home_id)

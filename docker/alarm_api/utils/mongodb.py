@@ -65,3 +65,14 @@ def mongo_find_user(user_id):
     except Exception as e:
         logging.error(f"Error fetching user command: {e}")
         return None
+    
+def house_by_id(home_id):
+    db = mongo_connect()
+    try:
+        home = db.houses.find({"home_id": home_id})[0]
+        if home:
+            return dumps(home)
+        return None
+    except Exception as e:
+        logging.error(f"Error fetching house by ID: {e}")
+        return None

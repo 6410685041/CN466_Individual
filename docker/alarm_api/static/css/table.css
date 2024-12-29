@@ -1,0 +1,29 @@
+#content table {
+    width: 80%;
+    margin: auto;
+    border-spacing: 5px;
+}
+
+#content table,th,td {
+    margin: 10px;
+    padding: 5px;
+    text-align: center;
+}
+
+#content th {
+    background-color: rgb(11, 78, 11);
+    color: white;
+    padding: 10px;
+}
+
+#content td{
+    background-color: rgb(189, 249, 189);
+}
+
+#content table td:first-child {
+    width: 30%;
+}
+
+#content table td:nth-child(2) {
+    width: 70%;
+}

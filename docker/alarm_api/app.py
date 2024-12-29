@@ -7,6 +7,9 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
+SECRET_KEY = os.environ['FLASK_SECRET_KEY']
+app.config['SECRET_KEY'] = SECRET_KEY
+
 from routes.line import line_blueprint
 from routes.liff import liff_blueprint
 
